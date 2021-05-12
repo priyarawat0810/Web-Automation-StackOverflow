@@ -1,63 +1,65 @@
 TITLE :
 What is a NullPointerException, and how do I fix it?
-				---------------------
-QUESTION DESCRIPTION : 
-                    
-            
-        
-            
-                    
-                        
-                    
-                
-                    
-                        This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
-                        
-                    
-                
-            
-        
 
-
-    
+QUESTION DESCRIPTION :
+This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
 
 What are Null Pointer Exceptions (java.lang.NullPointerException) and what causes them?
 
 What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
-    
-				---------------------
-ANSWER : 
+
+ANSWER :
 When you declare a reference variable (i.e., an object), you are really creating a pointer to an object. Consider the following code where you declare a variable of primitive type int:
+
 int x;
 x = 10;
 
+
 In this example, the variable x is an int and Java will initialize it to 0 for you. When you assign the value of 10 on the second line, your value of 10 is written into the memory location referred to by x.
+
 But, when you try to declare a reference type, something different happens. Take the following code:
+
 Integer num;
 num = new Integer(10);
 
+
 The first line declares a variable named num, but it does not actually contain a primitive value yet. Instead, it contains a pointer (because the type is Integer which is a reference type). Since you have not yet said what to point to, Java sets it to null, which means "I am pointing to nothing".
+
 In the second line, the new keyword is used to instantiate (or create) an object of type Integer, and the pointer variable num is assigned to that Integer object.
+
 The NullPointerException (NPE) occurs when you declare a variable but did not create an object and assign it to the variable before trying to use the contents of the variable (called dereferencing). So you are pointing to something that does not actually exist.
+
 Dereferencing usually happens when using . to access a method or field, or using [ to index an array.
+
 If you attempt to dereference num before creating the object you get a NullPointerException. In the most trivial cases, the compiler will catch the problem and let you know that "num may not have been initialized," but sometimes you may write code that does not directly create the object.
+
 For instance, you may have a method as follows:
+
 public void doSomething(SomeObject obj) {
    // Do something to obj, assumes obj is not null
    obj.myMethod();
 }
 
+
 In which case, you are not creating the object obj, but rather assuming that it was created before the doSomething() method was called. Note, it is possible to call the method like this:
+
 doSomething(null);
 
+
 In which case, obj is null, and the statement obj.myMethod() will throw a NullPointerException.
+
 If the method is intended to do something to the passed-in object as the above method does, it is appropriate to throw the NullPointerException because it's a programmer error and the programmer will need that information for debugging purposes.
+
 In addition to NullPointerExceptions thrown as a result of the method's logic, you can also check the method arguments for null values and throw NPEs explicitly by adding something like the following near the beginning of a method:
+
 // Throws an NPE with a custom error message if obj is null
 Objects.requireNonNull(obj, "obj must not be null");
 
+
 Note that it's helpful to say in your error message clearly which object cannot be null. The advantage of validating this is that 1) you can return your own clearer error messages and 2) for the rest of the method you know that unless obj is reassigned, it is not null and can be dereferenced safely.
+
 Alternatively, there may be cases where the purpose of the method is not solely to operate on the passed in object, and therefore a null parameter may be acceptable. In this case, you would need to check for a null parameter and behave differently. You should also explain this in the documentation. For example, doSomething() could be written as:
+
 /**
   * @param obj An optional foo for ____. May be null, in which case
   *  the result will be ____.
@@ -70,45 +72,45 @@ public void doSomething(SomeObject obj) {
     }
 }
 
+
 Finally, How to pinpoint the exception & cause using Stack Trace
 
-What methods/tools can be used to determine the cause so that you stop
-the exception from causing the program to terminate prematurely?
+What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
 
-Sonar with find bugs can detect NPE.
-Can sonar catch null pointer exceptions caused by JVM Dynamically
+Sonar with find bugs can detect NPE. Can sonar catch null pointer exceptions caused by JVM Dynamically
+
 Now Java 14 has added a new language feature to show the root cause of NullPointerException. This language feature has been part of SAP commercial JVM since 2006. The following is 2 minutes read to understand this amazing language feature.
+
 https://jfeatures.com/blog/NullPointerException
+
 In Java 14, the following is a sample NullPointerException Exception message:
 
 in thread "main" java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "list" is null
-
-    ************************************************************************************************************************************
+******************************************** ANSWER ENDS HERE ***************************************************************
 
 TITLE :
 Avoiding NullPointerException in Java
-				---------------------
-QUESTION DESCRIPTION : 
-                
+
+QUESTION DESCRIPTION :
 I use object != null a lot to avoid NullPointerException.
+
 What is an alternative to:
+
 if (someobject != null) {
     someobject.doCalc();
 }
 
-    
-				---------------------
-ANSWER : 
-This to me sounds like a reasonably common problem that junior to intermediate developers tend to face at some point: they either don't know or don't trust the contracts they are participating in and defensively overcheck for nulls.  Additionally, when writing their own code, they tend to rely on returning nulls to indicate something thus requiring the caller to check for nulls.
+
+ANSWER :
+This to me sounds like a reasonably common problem that junior to intermediate developers tend to face at some point: they either don't know or don't trust the contracts they are participating in and defensively overcheck for nulls. Additionally, when writing their own code, they tend to rely on returning nulls to indicate something thus requiring the caller to check for nulls.
 
 To put this another way, there are two instances where null checking comes up:
 
-
 Where null is a valid response in terms of the contract; and
+
 Where it isn't a valid response.
 
-
-(2) is easy.  Either use assert statements (assertions) or allow failure (for example,  NullPointerException).  Assertions are a highly-underused Java feature that was added in 1.4.  The syntax is:
+(2) is easy. Either use assert statements (assertions) or allow failure (for example, NullPointerException). Assertions are a highly-underused Java feature that was added in 1.4. The syntax is:
 
 assert <condition>
 
@@ -120,15 +122,15 @@ assert <condition> : <object>
 
 where <condition> is a boolean expression and <object> is an object whose toString() method's output will be included in the error.
 
-An assert statement throws an Error (AssertionError) if the condition is not true.  By default, Java ignores assertions.  You can enable assertions by passing the option -ea to the JVM.  You can enable and disable assertions for individual classes and packages.  This means that you can validate code with the assertions while developing and testing, and disable them in a production environment, although my testing has shown next to no performance impact from assertions.
+An assert statement throws an Error (AssertionError) if the condition is not true. By default, Java ignores assertions. You can enable assertions by passing the option -ea to the JVM. You can enable and disable assertions for individual classes and packages. This means that you can validate code with the assertions while developing and testing, and disable them in a production environment, although my testing has shown next to no performance impact from assertions.
 
-Not using assertions in this case is OK because the code will just fail, which is what will happen if you use assertions.  The only difference is that with assertions it might happen sooner, in a more-meaningful way and possibly with extra information, which may help you to figure out why it happened if you weren't expecting it.
+Not using assertions in this case is OK because the code will just fail, which is what will happen if you use assertions. The only difference is that with assertions it might happen sooner, in a more-meaningful way and possibly with extra information, which may help you to figure out why it happened if you weren't expecting it.
 
-(1) is a little harder.  If you have no control over the code you're calling then you're stuck.  If null is a valid response, you have to check for it.
+(1) is a little harder. If you have no control over the code you're calling then you're stuck. If null is a valid response, you have to check for it.
 
-If it's code that you do control, however (and this is often the case), then it's a different story.  Avoid using nulls as a response.  With methods that return collections, it's easy: return empty collections (or arrays) instead of nulls pretty much all the time.
+If it's code that you do control, however (and this is often the case), then it's a different story. Avoid using nulls as a response. With methods that return collections, it's easy: return empty collections (or arrays) instead of nulls pretty much all the time.
 
-With non-collections it might be harder.  Consider this as an example: if you have these interfaces:
+With non-collections it might be harder. Consider this as an example: if you have these interfaces:
 
 public interface Action {
   void doSomething();
@@ -139,7 +141,7 @@ public interface Parser {
 }
 
 
-where Parser takes raw user input and finds something to do, perhaps if you're implementing a command line interface for something.  Now you might make the contract that it returns null if there's no appropriate action.  That leads the null checking you're talking about.
+where Parser takes raw user input and finds something to do, perhaps if you're implementing a command line interface for something. Now you might make the contract that it returns null if there's no appropriate action. That leads the null checking you're talking about.
 
 An alternative solution is to never return null and instead use the Null Object pattern:
 
@@ -179,7 +181,7 @@ ParserFactory.getParser().findAction(someInput).doSomething();
 
 which is a much better design because it leads to more concise code.
 
-That said, perhaps it is entirely appropriate for the findAction() method to throw an Exception with a meaningful error message -- especially in this case where you are relying on user input.  It would be much better for the findAction method to throw an Exception than for the calling method to blow up with a simple NullPointerException with no explanation.
+That said, perhaps it is entirely appropriate for the findAction() method to throw an Exception with a meaningful error message -- especially in this case where you are relying on user input. It would be much better for the findAction method to throw an Exception than for the calling method to blow up with a simple NullPointerException with no explanation.
 
 try {
     ParserFactory.getParser().findAction(someInput).doSomething();
@@ -199,68 +201,70 @@ public Action findAction(final String userInput) {
     }
 }
 
-    ************************************************************************************************************************************
+******************************************** ANSWER ENDS HERE ***************************************************************
 
 TITLE :
 What is a NullPointerException, and how do I fix it?
-				---------------------
-QUESTION DESCRIPTION : 
-                    
-            
-        
-            
-                    
-                        
-                    
-                
-                    
-                        This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
-                        
-                    
-                
-            
-        
 
-
-    
+QUESTION DESCRIPTION :
+This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
 
 What are Null Pointer Exceptions (java.lang.NullPointerException) and what causes them?
 
 What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
-    
-				---------------------
-ANSWER : 
+
+ANSWER :
 When you declare a reference variable (i.e., an object), you are really creating a pointer to an object. Consider the following code where you declare a variable of primitive type int:
+
 int x;
 x = 10;
 
+
 In this example, the variable x is an int and Java will initialize it to 0 for you. When you assign the value of 10 on the second line, your value of 10 is written into the memory location referred to by x.
+
 But, when you try to declare a reference type, something different happens. Take the following code:
+
 Integer num;
 num = new Integer(10);
 
+
 The first line declares a variable named num, but it does not actually contain a primitive value yet. Instead, it contains a pointer (because the type is Integer which is a reference type). Since you have not yet said what to point to, Java sets it to null, which means "I am pointing to nothing".
+
 In the second line, the new keyword is used to instantiate (or create) an object of type Integer, and the pointer variable num is assigned to that Integer object.
+
 The NullPointerException (NPE) occurs when you declare a variable but did not create an object and assign it to the variable before trying to use the contents of the variable (called dereferencing). So you are pointing to something that does not actually exist.
+
 Dereferencing usually happens when using . to access a method or field, or using [ to index an array.
+
 If you attempt to dereference num before creating the object you get a NullPointerException. In the most trivial cases, the compiler will catch the problem and let you know that "num may not have been initialized," but sometimes you may write code that does not directly create the object.
+
 For instance, you may have a method as follows:
+
 public void doSomething(SomeObject obj) {
    // Do something to obj, assumes obj is not null
    obj.myMethod();
 }
 
+
 In which case, you are not creating the object obj, but rather assuming that it was created before the doSomething() method was called. Note, it is possible to call the method like this:
+
 doSomething(null);
 
+
 In which case, obj is null, and the statement obj.myMethod() will throw a NullPointerException.
+
 If the method is intended to do something to the passed-in object as the above method does, it is appropriate to throw the NullPointerException because it's a programmer error and the programmer will need that information for debugging purposes.
+
 In addition to NullPointerExceptions thrown as a result of the method's logic, you can also check the method arguments for null values and throw NPEs explicitly by adding something like the following near the beginning of a method:
+
 // Throws an NPE with a custom error message if obj is null
 Objects.requireNonNull(obj, "obj must not be null");
 
+
 Note that it's helpful to say in your error message clearly which object cannot be null. The advantage of validating this is that 1) you can return your own clearer error messages and 2) for the rest of the method you know that unless obj is reassigned, it is not null and can be dereferenced safely.
+
 Alternatively, there may be cases where the purpose of the method is not solely to operate on the passed in object, and therefore a null parameter may be acceptable. In this case, you would need to check for a null parameter and behave differently. You should also explain this in the documentation. For example, doSomething() could be written as:
+
 /**
   * @param obj An optional foo for ____. May be null, in which case
   *  the result will be ____.
@@ -273,81 +277,84 @@ public void doSomething(SomeObject obj) {
     }
 }
 
+
 Finally, How to pinpoint the exception & cause using Stack Trace
 
-What methods/tools can be used to determine the cause so that you stop
-the exception from causing the program to terminate prematurely?
+What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
 
-Sonar with find bugs can detect NPE.
-Can sonar catch null pointer exceptions caused by JVM Dynamically
+Sonar with find bugs can detect NPE. Can sonar catch null pointer exceptions caused by JVM Dynamically
+
 Now Java 14 has added a new language feature to show the root cause of NullPointerException. This language feature has been part of SAP commercial JVM since 2006. The following is 2 minutes read to understand this amazing language feature.
+
 https://jfeatures.com/blog/NullPointerException
+
 In Java 14, the following is a sample NullPointerException Exception message:
 
 in thread "main" java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "list" is null
-
-    ************************************************************************************************************************************
+******************************************** ANSWER ENDS HERE ***************************************************************
 
 TITLE :
 What is a NullPointerException, and how do I fix it?
-				---------------------
-QUESTION DESCRIPTION : 
-                    
-            
-        
-            
-                    
-                        
-                    
-                
-                    
-                        This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
-                        
-                    
-                
-            
-        
 
-
-    
+QUESTION DESCRIPTION :
+This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
 
 What are Null Pointer Exceptions (java.lang.NullPointerException) and what causes them?
 
 What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
-    
-				---------------------
-ANSWER : 
+
+ANSWER :
 When you declare a reference variable (i.e., an object), you are really creating a pointer to an object. Consider the following code where you declare a variable of primitive type int:
+
 int x;
 x = 10;
 
+
 In this example, the variable x is an int and Java will initialize it to 0 for you. When you assign the value of 10 on the second line, your value of 10 is written into the memory location referred to by x.
+
 But, when you try to declare a reference type, something different happens. Take the following code:
+
 Integer num;
 num = new Integer(10);
 
+
 The first line declares a variable named num, but it does not actually contain a primitive value yet. Instead, it contains a pointer (because the type is Integer which is a reference type). Since you have not yet said what to point to, Java sets it to null, which means "I am pointing to nothing".
+
 In the second line, the new keyword is used to instantiate (or create) an object of type Integer, and the pointer variable num is assigned to that Integer object.
+
 The NullPointerException (NPE) occurs when you declare a variable but did not create an object and assign it to the variable before trying to use the contents of the variable (called dereferencing). So you are pointing to something that does not actually exist.
+
 Dereferencing usually happens when using . to access a method or field, or using [ to index an array.
+
 If you attempt to dereference num before creating the object you get a NullPointerException. In the most trivial cases, the compiler will catch the problem and let you know that "num may not have been initialized," but sometimes you may write code that does not directly create the object.
+
 For instance, you may have a method as follows:
+
 public void doSomething(SomeObject obj) {
    // Do something to obj, assumes obj is not null
    obj.myMethod();
 }
 
+
 In which case, you are not creating the object obj, but rather assuming that it was created before the doSomething() method was called. Note, it is possible to call the method like this:
+
 doSomething(null);
 
+
 In which case, obj is null, and the statement obj.myMethod() will throw a NullPointerException.
+
 If the method is intended to do something to the passed-in object as the above method does, it is appropriate to throw the NullPointerException because it's a programmer error and the programmer will need that information for debugging purposes.
+
 In addition to NullPointerExceptions thrown as a result of the method's logic, you can also check the method arguments for null values and throw NPEs explicitly by adding something like the following near the beginning of a method:
+
 // Throws an NPE with a custom error message if obj is null
 Objects.requireNonNull(obj, "obj must not be null");
 
+
 Note that it's helpful to say in your error message clearly which object cannot be null. The advantage of validating this is that 1) you can return your own clearer error messages and 2) for the rest of the method you know that unless obj is reassigned, it is not null and can be dereferenced safely.
+
 Alternatively, there may be cases where the purpose of the method is not solely to operate on the passed in object, and therefore a null parameter may be acceptable. In this case, you would need to check for a null parameter and behave differently. You should also explain this in the documentation. For example, doSomething() could be written as:
+
 /**
   * @param obj An optional foo for ____. May be null, in which case
   *  the result will be ____.
@@ -360,18 +367,109 @@ public void doSomething(SomeObject obj) {
     }
 }
 
+
 Finally, How to pinpoint the exception & cause using Stack Trace
 
-What methods/tools can be used to determine the cause so that you stop
-the exception from causing the program to terminate prematurely?
+What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
 
-Sonar with find bugs can detect NPE.
-Can sonar catch null pointer exceptions caused by JVM Dynamically
+Sonar with find bugs can detect NPE. Can sonar catch null pointer exceptions caused by JVM Dynamically
+
 Now Java 14 has added a new language feature to show the root cause of NullPointerException. This language feature has been part of SAP commercial JVM since 2006. The following is 2 minutes read to understand this amazing language feature.
+
 https://jfeatures.com/blog/NullPointerException
+
 In Java 14, the following is a sample NullPointerException Exception message:
 
 in thread "main" java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "list" is null
+******************************************** ANSWER ENDS HERE ***************************************************************
 
-    ************************************************************************************************************************************
+TITLE :
+What is a NullPointerException, and how do I fix it?
+
+QUESTION DESCRIPTION :
+This question's answers are a community effort. Edit existing answers to improve this post. It is not currently accepting new answers or interactions.
+
+What are Null Pointer Exceptions (java.lang.NullPointerException) and what causes them?
+
+What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
+
+ANSWER :
+When you declare a reference variable (i.e., an object), you are really creating a pointer to an object. Consider the following code where you declare a variable of primitive type int:
+
+int x;
+x = 10;
+
+
+In this example, the variable x is an int and Java will initialize it to 0 for you. When you assign the value of 10 on the second line, your value of 10 is written into the memory location referred to by x.
+
+But, when you try to declare a reference type, something different happens. Take the following code:
+
+Integer num;
+num = new Integer(10);
+
+
+The first line declares a variable named num, but it does not actually contain a primitive value yet. Instead, it contains a pointer (because the type is Integer which is a reference type). Since you have not yet said what to point to, Java sets it to null, which means "I am pointing to nothing".
+
+In the second line, the new keyword is used to instantiate (or create) an object of type Integer, and the pointer variable num is assigned to that Integer object.
+
+The NullPointerException (NPE) occurs when you declare a variable but did not create an object and assign it to the variable before trying to use the contents of the variable (called dereferencing). So you are pointing to something that does not actually exist.
+
+Dereferencing usually happens when using . to access a method or field, or using [ to index an array.
+
+If you attempt to dereference num before creating the object you get a NullPointerException. In the most trivial cases, the compiler will catch the problem and let you know that "num may not have been initialized," but sometimes you may write code that does not directly create the object.
+
+For instance, you may have a method as follows:
+
+public void doSomething(SomeObject obj) {
+   // Do something to obj, assumes obj is not null
+   obj.myMethod();
+}
+
+
+In which case, you are not creating the object obj, but rather assuming that it was created before the doSomething() method was called. Note, it is possible to call the method like this:
+
+doSomething(null);
+
+
+In which case, obj is null, and the statement obj.myMethod() will throw a NullPointerException.
+
+If the method is intended to do something to the passed-in object as the above method does, it is appropriate to throw the NullPointerException because it's a programmer error and the programmer will need that information for debugging purposes.
+
+In addition to NullPointerExceptions thrown as a result of the method's logic, you can also check the method arguments for null values and throw NPEs explicitly by adding something like the following near the beginning of a method:
+
+// Throws an NPE with a custom error message if obj is null
+Objects.requireNonNull(obj, "obj must not be null");
+
+
+Note that it's helpful to say in your error message clearly which object cannot be null. The advantage of validating this is that 1) you can return your own clearer error messages and 2) for the rest of the method you know that unless obj is reassigned, it is not null and can be dereferenced safely.
+
+Alternatively, there may be cases where the purpose of the method is not solely to operate on the passed in object, and therefore a null parameter may be acceptable. In this case, you would need to check for a null parameter and behave differently. You should also explain this in the documentation. For example, doSomething() could be written as:
+
+/**
+  * @param obj An optional foo for ____. May be null, in which case
+  *  the result will be ____.
+  */
+public void doSomething(SomeObject obj) {
+    if(obj == null) {
+       // Do something
+    } else {
+       // Do something else
+    }
+}
+
+
+Finally, How to pinpoint the exception & cause using Stack Trace
+
+What methods/tools can be used to determine the cause so that you stop the exception from causing the program to terminate prematurely?
+
+Sonar with find bugs can detect NPE. Can sonar catch null pointer exceptions caused by JVM Dynamically
+
+Now Java 14 has added a new language feature to show the root cause of NullPointerException. This language feature has been part of SAP commercial JVM since 2006. The following is 2 minutes read to understand this amazing language feature.
+
+https://jfeatures.com/blog/NullPointerException
+
+In Java 14, the following is a sample NullPointerException Exception message:
+
+in thread "main" java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "list" is null
+******************************************** ANSWER ENDS HERE ***************************************************************
 

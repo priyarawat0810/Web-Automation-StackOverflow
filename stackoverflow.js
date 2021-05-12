@@ -25,6 +25,7 @@ async function main(){
 
     let tabs = await browser.pages();
     let tab = tabs[0];
+    // await tab.setViewport({width: 1366, height: 768});
     await tab.goto("https://stackoverflow.com/users/login?ssrc=head");
     await tab.type("#email", email);
     await tab.type("#password", password);
@@ -40,7 +41,7 @@ async function main(){
     await tab.waitForSelector(".result-link a", {visible: true});
     let queList = await tab.$$(".result-link a");
     let arrQueLink = [];
-    for(let i=0; i<queList.length; i++){
+    for(let i=0; i<queList.length; i++){    //queList.length
             let queLink = await tab.evaluate(function(ele){
                 return ele.getAttribute("href");
             }, queList[i]);
@@ -62,27 +63,19 @@ async function matchingQue(tab, queLink){
     let strSimilarity = similarity(question, titleText);
     if(strSimilarity>=0.5){
          // console.log(strSimilarity);
-         data += "TITLE :\n" + titleText + "\n\t\t\t\t---------------------";
-    let desc = await tab.$$(".s-prose.js-post-body");
-    for(let i=0; i<=1; i++){
-        let descText = await tab.evaluate(function(ele){
-            return ele.textContent;
-        }, desc[i]);
-
-
-        if(i==0){
-            data += "\nQUESTION DESCRIPTION : ";
-        } else{
-                data += "\nANSWER : ";
-            }
-            data += descText;
-        if(i==0){
-            data += "\n\t\t\t\t---------------------"
-        } else{
-            data += "************************************************************************************************************************************\n\n"
-        }
-    }
-    }
+    data += "TITLE :\n" + titleText + "\n\n";
+    let que = await tab.$$(".s-prose");
+    let queText = await tab.evaluate(function(ele){
+        return ele.innerText;
+    }, que[0]);
+    data += "QUESTION DESCRIPTION :\n" + queText + "\n\n";
+    let ans = await tab.$(".answer.accepted-answer .s-prose");
+    let ansText = await tab.evaluate(function(ele){
+        return ele.innerText;
+    }, ans);
+    data += "ANSWER :\n" + ansText;
+    data += "\n******************************************** ANSWER ENDS HERE ***************************************************************\n\n"
+    }   
     fs.writeFileSync("Answers.txt", data); 
     // console.log(data);
 }
